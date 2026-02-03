@@ -1,6 +1,6 @@
 # Rope Roller Maker - Progressive Web App
 
-A standalone web application for designing and generating custom cable knit texture rollers.
+A standalone web application for designing and generating custom cable knit texture roller STL Files.
 
 ## 📱 Installation Instructions
 
