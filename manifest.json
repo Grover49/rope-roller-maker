@@ -1,0 +1,32 @@
+{
+  "name": "Rope Roller Maker",
+  "short_name": "Rope Roller",
+  "description": "Design and generate custom cable knit texture rollers for clay and pottery",
+  "start_url": "./rope_roller_maker_standalone.html",
+  "display": "standalone",
+  "background_color": "#1a1410",
+  "theme_color": "#d4521f",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities", "design"],
+  "screenshots": [
+    {
+      "src": "screenshot.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    }
+  ]
+}
