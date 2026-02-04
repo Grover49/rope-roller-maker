@@ -421,7 +421,13 @@
                         <span class="label-text">Spiral Wraps <span class="info-badge">density</span></span>
                         <button class="reset-btn" onclick="resetSlider('spiralWraps', 10)">Reset</button>
                     </label>
-                    <input type="range" id="spiralWraps" min="4" max="20" value="10" step="1">
+                    <div style="margin-bottom: 0.8rem;">
+                        <label style="display: flex; align-items: center; font-size: 1rem; cursor: pointer;">
+                            <input type="checkbox" id="tangentMode" style="width: 20px; height: 20px; margin-right: 0.5rem; cursor: pointer;">
+                            <span style="color: var(--text); font-family: 'Work Sans', sans-serif; letter-spacing: 0.05em;">Tangent Mode (horizontal rings instead of spiral)</span>
+                        </label>
+                    </div>
+                    <input type="range" id="spiralWraps" min="1" max="25" value="10" step="1">
                     <div class="value-display">
                         <span class="current" id="spiralWraps-value">10</span>
                     </div>
@@ -556,6 +562,7 @@
             const ropeWidth = parseFloat(document.getElementById('ropeWidth').value);
             const ropeDepth = parseFloat(document.getElementById('ropeDepth').value);
             const spiralWraps = parseInt(document.getElementById('spiralWraps').value);
+            const tangentMode = document.getElementById('tangentMode').checked;
             const twistRate = parseInt(document.getElementById('twistRate').value);
             const numStrands = parseInt(document.getElementById('numStrands').value);
             const smoothing = parseFloat(document.getElementById('smoothing').value) / 100;
@@ -577,6 +584,61 @@
             ctx.fillStyle = '#0a0806';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
+            if (tangentMode) {
+                // TANGENT MODE: horizontal rings
+                const zStep = width / spiralWraps;
+                
+                for (let y = 0; y < canvas.height; y++) {
+                    for (let x = 0; x < canvas.width; x++) {
+                        const z = (x / canvas.width) * width;
+                        const theta = (y / canvas.height) * 2 * Math.PI;
+                        const arcPos = theta * (circumference / (2 * Math.PI));
+                        
+                        let maxHeight = 0;
+                        
+                        for (let wrapIdx = 0; wrapIdx < spiralWraps; wrapIdx++) {
+                            const wrapZ = (wrapIdx + 0.5) * zStep;
+                            let dz = z - wrapZ;
+                            const distToRing = Math.abs(dz);
+                            
+                            if (distToRing < ropeWidth) {
+                                const ropeTwistAngle = (arcPos / circumference) * twistRate * 2 * Math.PI;
+                                let strandHeights = [];
+                                let strandInfluences = [];
+                                
+                                for (let s = 0; s < numStrands; s++) {
+                                    const baseAngle = s * (2 * Math.PI / numStrands);
+                                    const strandAngle = baseAngle + ropeTwistAngle;
+                                    const strandOffsetZ = (ropeDepth * weaveDensity) * Math.sin(strandAngle);
+                                    const strandOffsetRadial = (ropeDepth * weaveDensity) * Math.cos(strandAngle);
+                                    const dzToStrand = distToRing - Math.abs(strandOffsetZ);
+                                    const distToStrand = Math.abs(dzToStrand);
+                                    const strandInfluence = Math.exp(-(distToStrand ** 2) / ((ropeDepth * 0.35) ** 2));
+                                    const strandHeight = ropeDepth + strandOffsetRadial + ropeDepth * 0.35 * strandInfluence;
+                                    strandHeights.push(strandHeight);
+                                    strandInfluences.push(strandInfluence);
+                                }
+                                
+                                const maxStrand = Math.max(...strandHeights);
+                                const totalInfluence = strandInfluences.reduce((a, b) => a + b, 0);
+                                const weightedAvg = strandHeights.reduce((sum, h, i) => sum + h * strandInfluences[i], 0) / (totalInfluence + 0.001);
+                                const blendedHeight = (1 - smoothing) * maxStrand + smoothing * weightedAvg;
+                                const ropeEnvelope = Math.exp(-(distToRing ** 2) / ((ropeWidth / 3) ** 2));
+                                const contribution = blendedHeight * ropeEnvelope;
+                                maxHeight = Math.max(maxHeight, contribution);
+                            }
+                        }
+                        
+                        const intensity = Math.min(255, Math.max(0, (maxHeight / (ropeDepth * 2)) * 255));
+                        const r = Math.floor(139 + intensity * 0.3);
+                        const g = Math.floor(69 + intensity * 0.25);
+                        const b = Math.floor(19 + intensity * 0.15);
+                        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                        ctx.fillRect(x, y, 1, 1);
+                    }
+                }
+            } else {
+                // SPIRAL MODE (original)
             const pitch = width / spiralWraps;
             
             for (let y = 0; y < canvas.height; y++) {
@@ -639,6 +701,7 @@
                     ctx.fillRect(x, y, 1, 1);
                 }
             }
+            }
             
             ctx.strokeStyle = '#d4521f';
             ctx.lineWidth = 2;
@@ -652,11 +715,21 @@
             
             btn.disabled = true;
             statusMsg.className = 'status-message generating';
-            statusMsg.innerHTML = '<span class="spinner"></span>Generating STL file (this may take a moment)...';
+            statusMsg.innerHTML = '<span class="spinner"></span>Generating STL file (this may take 30-60 seconds)...';
             
             // Use setTimeout to allow UI to update
             setTimeout(() => {
                 try {
+                    // Get current settings for filename
+                    const width = parseFloat(document.getElementById('width').value);
+                    const ropeWidth = parseFloat(document.getElementById('ropeWidth').value);
+                    const ropeDepth = parseFloat(document.getElementById('ropeDepth').value);
+                    const spiralWraps = parseInt(document.getElementById('spiralWraps').value);
+                    const twistRate = parseInt(document.getElementById('twistRate').value);
+                    const numStrands = parseInt(document.getElementById('numStrands').value);
+                    const tangentMode = document.getElementById('tangentMode').checked;
+                    
+                    statusMsg.innerHTML = '<span class="spinner"></span>Building mesh geometry...';
                     const stlData = generateSTLFile();
                     
                     // Create blob and download
@@ -664,7 +737,14 @@
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = 'rope_roller.stl';
+                    
+                    // Generate filename with settings
+                    const smoothingPercent = Math.round(parseFloat(document.getElementById('smoothing').value));
+                    const weaveDensity = Math.round(parseFloat(document.getElementById('weaveDensity').value) * 100);
+                    const modePrefix = tangentMode ? 'TN' : 'SN';
+                    const filename = `Roller_W${width}-RW${ropeWidth}-RD${ropeDepth}-${modePrefix}${spiralWraps}-TW${twistRate}-ST${numStrands}-SM${smoothingPercent}-WD${weaveDensity}.stl`;
+                    a.download = filename;
+                    
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
@@ -695,6 +775,7 @@
             const ropeWidth = parseFloat(document.getElementById('ropeWidth').value);
             const ropeDepth = parseFloat(document.getElementById('ropeDepth').value);
             const spiralWraps = parseInt(document.getElementById('spiralWraps').value);
+            const tangentMode = document.getElementById('tangentMode').checked;
             const twistRate = parseInt(document.getElementById('twistRate').value);
             const numStrands = parseInt(document.getElementById('numStrands').value);
             const smoothing = parseFloat(document.getElementById('smoothing').value) / 100;
@@ -710,8 +791,9 @@
             const backgroundDepth = 1.0;
             
             // Mesh resolution (reduced for browser performance)
-            const angularSteps = 200;
-            const axialSteps = 150;
+            // Lower resolution for tangent mode since it's more computationally intensive
+            const angularSteps = tangentMode ? 150 : 200;
+            const axialSteps = tangentMode ? 100 : 150;
             
             // Generate displacement map
             const displacement = [];
@@ -728,7 +810,87 @@
                     let disp = -backgroundDepth + 0.3 * purlX * purlY;
                     
                     // Spiral rope
-                    const pitch = width / spiralWraps;
+                                        if (tangentMode) {
+                                            // TANGENT MODE - OPTIMIZED: Calculate one ring pattern, then reuse
+                                            const zStep = width / spiralWraps;
+                                            
+                                            // Pre-calculate one ring's pattern for each angular position
+                                            const ringPattern = [];
+                                            for (let j = 0; j < angularSteps; j++) {
+                                                const theta = (j / angularSteps) * 2 * Math.PI;
+                                                const arcPos = theta * radius;
+                                                const ropeTwistAngle = (arcPos / circumference) * twistRate * 2 * Math.PI;
+                                                
+                                                // Calculate pattern at different distances from ring center
+                                                const distances = [];
+                                                for (let distIdx = 0; distIdx <= ropeWidth * 2; distIdx += 0.5) {
+                                                    const distToRing = distIdx;
+                                                    
+                                                    if (distToRing < ropeWidth) {
+                                                        let strandHeights = [];
+                                                        let strandInfluences = [];
+                                                        
+                                                        for (let s = 0; s < numStrands; s++) {
+                                                            const baseAngle = s * (2 * Math.PI / numStrands);
+                                                            const strandAngle = baseAngle + ropeTwistAngle;
+                                                            const strandOffsetZ = strandOrbit * Math.sin(strandAngle);
+                                                            const strandOffsetRadial = strandOrbit * Math.cos(strandAngle);
+                                                            const dzToStrand = distToRing - Math.abs(strandOffsetZ);
+                                                            const distToStrand = Math.abs(dzToStrand);
+                                                            const strandInfluence = Math.exp(-(distToStrand ** 2) / (strandRadius * 0.8) ** 2);
+                                                            const strandHeight = ropeRadius + strandOffsetRadial + strandRadius * strandInfluence;
+                                                            strandHeights.push(strandHeight);
+                                                            strandInfluences.push(strandInfluence);
+                                                        }
+                                                        
+                                                        const maxStrand = Math.max(...strandHeights);
+                                                        const totalInfluence = strandInfluences.reduce((a, b) => a + b, 0);
+                                                        const weightedAvg = strandHeights.reduce((sum, h, idx) => sum + h * strandInfluences[idx], 0) / (totalInfluence + 0.001);
+                                                        const blendedHeight = (1 - smoothing) * maxStrand + smoothing * weightedAvg;
+                                                        const ropeEnvelope = Math.exp(-(distToRing ** 2) / ((ropeWidth / 3) ** 2));
+                                                        const ropeBase = ropeRadius * ropeEnvelope;
+                                                        const contribution = Math.max(blendedHeight * ropeEnvelope, ropeBase);
+                                                        distances.push({dist: distToRing, height: contribution});
+                                                    } else {
+                                                        distances.push({dist: distToRing, height: 0});
+                                                    }
+                                                }
+                                                ringPattern.push(distances);
+                                            }
+                                            
+                                            // Now apply the pattern to all points
+                                            for (let i = 0; i < axialSteps; i++) {
+                                                displacement[i] = [];
+                                                const z = (i / (axialSteps - 1)) * width;
+                                                
+                                                for (let j = 0; j < angularSteps; j++) {
+                                                    const theta = (j / angularSteps) * 2 * Math.PI;
+                                                    const purlX = Math.sin(z * 2 * Math.PI / 2.5);
+                                                    const purlY = Math.sin(theta * 50);
+                                                    let disp = -backgroundDepth + 0.3 * purlX * purlY;
+                                                    
+                                                    // Check distance to each ring and lookup in pattern
+                                                    for (let wrapIdx = 0; wrapIdx < spiralWraps; wrapIdx++) {
+                                                        const wrapZ = (wrapIdx + 0.5) * zStep;
+                                                        const distToRing = Math.abs(z - wrapZ);
+                                                        
+                                                        if (distToRing < ropeWidth * 2) {
+                                                            // Lookup in pre-calculated pattern
+                                                            const pattern = ringPattern[j];
+                                                            const distKey = Math.round(distToRing * 2); // 0.5mm resolution
+                                                            if (distKey < pattern.length) {
+                                                                disp = Math.max(disp, pattern[distKey].height);
+                                                            }
+                                                        }
+                                                    }
+                                                    
+                                                    displacement[i][j] = disp;
+                                                }
+                                            }
+                    
+            } else {
+                // SPIRAL MODE
+                const pitch = width / spiralWraps;
                     const arcPos = theta * radius;
                     
                     for (let spiralStart = 0; spiralStart < spiralWraps; spiralStart++) {
@@ -779,6 +941,8 @@
                 }
             }
             
+            }
+            
             // Generate vertices
             const vertices = [];
             for (let i = 0; i < axialSteps; i++) {
@@ -820,8 +984,10 @@
             const buffer = new ArrayBuffer(84 + faces.length * 50);
             const view = new DataView(buffer);
             
-            // Header (80 bytes)
-            const header = 'Rope Roller';
+            // Header (80 bytes) - Include settings for easy identification
+            const mode = tangentMode ? 'Tangent' : 'Spiral';
+            const header = `Roller:W${width}-RW${ropeWidth}-D${ropeDepth}-N${spiralWraps}-T${twistRate}-S${numStrands}-${mode}`;
+            // Pad or truncate to 80 bytes
             for (let i = 0; i < 80; i++) {
                 view.setUint8(i, i < header.length ? header.charCodeAt(i) : 0);
             }
