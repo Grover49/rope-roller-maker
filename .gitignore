@@ -19,6 +19,9 @@ env/
 .vscode/
 .idea/
 
+# Generated test output (STL files, etc.)
+test_output/
+
 # OS files
 .DS_Store
 Thumbs.db
