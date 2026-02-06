@@ -1,6 +1,55 @@
 # Rope Roller Maker - Claude Code Development Context
 
-## QUICK START FOR CLAUDE CODE
+## ⚡ SESSION START INSTRUCTIONS (READ THIS FIRST)
+
+**You are Claude Code, resuming work on an active project. You have no memory of previous sessions.** Follow these steps:
+
+1. **Read this entire document** before making any changes or writing any code.
+2. **Check the DEVELOPMENT PROGRESS LOG** at the bottom of this file — it tells you exactly what's been done and what's next.
+3. **Tell the human** what you understand the current state to be and what the next step is. Ask them to confirm before proceeding.
+4. **Before ending any session**, update the DEVELOPMENT PROGRESS LOG with what you accomplished, decisions made, and what's next.
+
+### Key project files to be aware of:
+```
+rope-roller-maker/
+├── CLAUDE_CODE_CONTEXT.md          ← YOU ARE HERE — read fully
+├── .gitignore                      ← configured for Python project
+├── README.md                       ← project overview
+├── web/                            ← original web prototype (REFERENCE ONLY — don't modify)
+│   └── rope_roller_maker_standalone.html  ← working JS implementation to compare against
+├── desktop/                        ← THE ACTIVE CODEBASE
+│   ├── main.py                     ← app entry point (run with: python desktop/main.py)
+│   ├── requirements.txt            ← Python dependencies
+│   ├── core/
+│   │   ├── parameters.py           ← slider definitions, fixed specs, filename generation
+│   │   ├── pattern_generator.py    ← spiral + tangent displacement map algorithms
+│   │   └── stl_generator.py        ← mesh generation + binary STL export
+│   ├── ui/                         ← (UI modules will go here)
+│   └── tests/
+│       ├── test_stl_generation.py  ← generates test STL files for both modes
+│       └── compare_stl.py          ← byte-level comparison against web app output
+└── test_output/                    ← generated STL files (gitignored)
+```
+
+### How to work with the human:
+- They have **basic coding knowledge** — explain decisions clearly
+- **Always ask before major changes** — they prefer confirmation
+- **Quality over speed** — rock-solid reliability is the priority
+- They will usually accept your recommendations but may have many questions
+- **Always commit progress** at milestones so nothing is lost
+- Permissions are configured in `.claude/settings.local.json` — Bash, Edit, Write are all pre-allowed
+
+### Environment:
+- **OS:** Windows
+- **Python:** 3.12.6
+- **PyQt6:** 6.10.2
+- **numpy:** 2.4.2
+- **Git:** managed via GitHub Desktop + Claude Code CLI
+- **Repo:** https://github.com/grover49/rope-roller-maker (push when asked or at session end)
+
+---
+
+## FULL PROJECT CONTEXT (read below for complete background)
 
 **Read this entire document before making any changes.** This project is transitioning from a working web prototype to a cross-platform desktop application. The human developer has basic coding knowledge - explain decisions, ask before major changes, and prioritize code quality and reliability over speed.
 
@@ -518,6 +567,42 @@ This document was prepared by Claude (Projects) to hand off to Claude Code. The 
 
 ---
 
-*Document version: 1.0*
+## DEVELOPMENT PROGRESS LOG
+
+**Update this section at the end of each Claude Code session** so the next session knows what's been done and what's next.
+
+### Session 1 — February 6, 2025
+
+**What was accomplished:**
+1. **Repo reorganized** — All web prototype files moved to `web/` subfolder. Desktop app lives in `desktop/`. Project docs stay at root.
+2. **Project structure created** — `desktop/` with `main.py`, `requirements.txt`, and subfolders: `ui/`, `core/`, `tests/`
+3. **Environment verified** — Python 3.12.6, PyQt6 6.10.2, numpy 2.4.2 all installed and working. Hello world PyQt6 window confirmed.
+4. **Core STL algorithm fully ported to Python:**
+   - `desktop/core/parameters.py` — All 8 slider params, fixed specs, filename/header generation
+   - `desktop/core/pattern_generator.py` — Spiral + Tangent displacement map algorithms using numpy
+   - `desktop/core/stl_generator.py` — Mesh generation + binary STL export
+5. **Verified: byte-for-byte identical geometry** to web prototype (0.000mm vertex difference)
+6. **Performance: Tangent mode 20-30sec (browser) → 0.04sec (Python/numpy)**
+7. **Test scripts created:** `desktop/tests/test_stl_generation.py` and `desktop/tests/compare_stl.py`
+8. **`.gitignore` created** — ignores `.claude/`, `__pycache__/`, `test_output/`, IDE settings, OS files
+9. **Permissions configured** — `.claude/settings.local.json` allows Bash, Edit, Write without prompts
+
+**Filename convention note:** Rope depth uses no decimals — `RD4` for 4.0mm, `RD45` for 4.5mm (operator interprets by mental decimal shift).
+
+**What's next:**
+- **Step 3: Build real UI with sliders** — Replace hello world window with actual controls panel (8 sliders, mode selector, generate button, save button)
+- **Step 4: Add 2D preview** — Visual pattern preview like the web version
+- **Step 5: Image-to-texture mode** — Major new feature
+- **Step 6: Package for distribution** — PyInstaller executables
+
+**Commits made (3, all pushed to GitHub):**
+1. `c2cac18` — Reorganize repo and add desktop app skeleton
+2. `97c6ecb` — Add .gitignore for Python project
+3. `e991064` — Port STL generation algorithm to Python with numpy
+
+---
+
+*Document version: 1.1*
 *Created: February 2025*
+*Last updated: February 6, 2025 — Session 1*
 *For use with: Claude Code CLI*
