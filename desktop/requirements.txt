@@ -1,0 +1,8 @@
+# Rope Roller Maker - Desktop Application Dependencies
+#
+# Install with: pip install -r requirements.txt
+
+PyQt6>=6.6.0       # GUI framework
+numpy>=1.24.0      # Fast math for mesh calculations
+# numpy-stl        # STL file writing (will add when needed)
+# Pillow           # Image processing for image-to-texture (will add when needed)
