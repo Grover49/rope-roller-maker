@@ -5,20 +5,20 @@ A standalone web application for designing and generating custom cable knit text
 ## 📱 Installation Instructions
 
 ### Android (Chrome/Edge):
-1. Open `rope_roller_maker_standalone.html` in Chrome or Edge
+1. Open `web/rope_roller_maker_standalone.html` in Chrome or Edge
 2. Tap the menu (⋮) → "Install app" or "Add to Home screen"
 3. The app icon will appear on your home screen
 4. Launch it like any native app!
 
 ### iOS (Safari):
-1. Open `rope_roller_maker_standalone.html` in Safari
+1. Open `web/rope_roller_maker_standalone.html` in Safari
 2. Tap the Share button (□↑)
 3. Scroll down and tap "Add to Home Screen"
 4. Tap "Add" in the top right
 5. The app icon will appear on your home screen
 
 ### Desktop (Chrome/Edge):
-1. Open the HTML file in Chrome or Edge
+1. Open `web/rope_roller_maker_standalone.html` in Chrome or Edge
 2. Click the install icon (⊕) in the address bar
 3. Click "Install"
 4. App will open in its own window
@@ -29,14 +29,14 @@ For the PWA to work properly, you need to serve the files. You have several opti
 
 ### Option 1: GitHub Pages (Free & Easy)
 1. Create a GitHub repository
-2. Upload all files:
-   - `rope_roller_maker_standalone.html`
-   - `manifest.json`
-   - `service-worker.js`
-   - `icon-192.png` (you'll need to create this from icon.svg)
-   - `icon-512.png` (you'll need to create this from icon.svg)
+2. Upload all files in the `web/` folder:
+   - `web/rope_roller_maker_standalone.html`
+   - `web/manifest.json`
+   - `web/service-worker.js`
+   - `web/icon-192.png` (you'll need to create this from icon.svg)
+   - `web/icon-512.png` (you'll need to create this from icon.svg)
 3. Enable GitHub Pages in repository settings
-4. Access at: `https://yourusername.github.io/repository-name/rope_roller_maker_standalone.html`
+4. Access at: `https://grover49.github.io/rope-roller-maker/web/rope_roller_maker_standalone.html`
 
 ### Option 2: Netlify/Vercel (Free)
 1. Create account on Netlify.com or Vercel.com
@@ -56,7 +56,7 @@ python -m http.server 8000
 npx http-server
 ```
 
-Then visit: `http://localhost:8000/rope_roller_maker_standalone.html`
+Then visit: `http://localhost:8000/web/rope_roller_maker_standalone.html`
 
 ## 🎨 Creating App Icons
 
@@ -77,12 +77,12 @@ convert -background none -resize 512x512 icon.svg icon-512.png
 
 ## 📁 Required Files
 
-For the PWA to work, keep these files in the same folder:
-- `rope_roller_maker_standalone.html` (main app)
-- `manifest.json` (app configuration)
-- `service-worker.js` (offline functionality)
-- `icon-192.png` (app icon - small)
-- `icon-512.png` (app icon - large)
+For the PWA to work, keep these files together in the `web/` folder:
+- `web/rope_roller_maker_standalone.html` (main app)
+- `web/manifest.json` (app configuration)
+- `web/service-worker.js` (offline functionality)
+- `web/icon-192.png` (app icon - small)
+- `web/icon-512.png` (app icon - large)
 
 ## ✨ Features
 
